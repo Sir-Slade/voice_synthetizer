@@ -45,6 +45,10 @@ class VoiceSynthetizer:
         self.model.decoder.gate_threshold = stop_threshold
 
         
+    @staticmethod
+    def available_voices():
+        return [voice for voice in os.listdir(VoiceSynthetizer.models_directory) \
+                if os.path.isfile(os.path.join(VoiceSynthetizer.models_directory, voice))]
         
     def ARPA(self, text, punctuation=r"!?,.;", EOS_Token=True):
                 out = ''
@@ -78,7 +82,7 @@ class VoiceSynthetizer:
         hifigan.load_state_dict(state_dict_g["generator"])
         hifigan.eval()
         hifigan.remove_weight_norm()
-        return hifigan
+        return hifigan   
 
     def has_MMI(self, STATE_DICT):
                 return any(True for x in STATE_DICT.keys() if "mi." in x)

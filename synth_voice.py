@@ -67,7 +67,7 @@ class VoiceSynthetizer:
 
     @staticmethod
     def load_hifigan():        
-        hifigan_pretrained_model = 'hifimodel'
+        hifigan_pretrained_model = os.path.join(VoiceSynthetizer.models_directory, 'PretrainedModels', 'hifimodel')
         if not os.path.exists(hifigan_pretrained_model):
             raise Exception("HiFI-GAN model is not found!")
         

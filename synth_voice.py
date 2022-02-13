@@ -22,8 +22,8 @@ from meldataset import MAX_WAV_VALUE
 
 
 class VoiceSynthetizer:
-    
-    def __init__(self, sampling_rate=22050):
+    models_directory = "C:\\Tacotron2_Voice_Models" #Only for windows
+    def __init__(self, model_name, sampling_rate=22050):
         
         if not os.path.exists("tacotron2"):
             raise FileNotFoundError("Submodule 'tacotron2' is not installed. Clone the repo 'https://github.com/NVIDIA/tacotron2.git' to install it.")
@@ -36,9 +36,9 @@ class VoiceSynthetizer:
         self.pronunciation_dict = {}
         for line in reversed((open('merged.dict.txt', "r").read()).splitlines()):
             self.pronunciation_dict[(line.split(" ",1))[0]] = (line.split(" ",1))[1].strip()
-        self.hifigan = self.get_hifigan()
+        self.hifigan = VoiceSynthetizer.load_hifigan()
 
-        self.model = self.get_Tactron2()
+        self.load_Tactron2Model(model_name)
         
         self.model.decoder.max_decoder_steps = 3000 #@param {type:"integer"}
         stop_threshold = 0.324 #@param {type:"number"}
@@ -61,7 +61,8 @@ class VoiceSynthetizer:
                 if EOS_Token and out[-1] != ";": out += ";"
                 return out
 
-    def get_hifigan(self):        
+    @staticmethod
+    def load_hifigan():        
         hifigan_pretrained_model = 'hifimodel'
         if not os.path.exists(hifigan_pretrained_model):
             raise Exception("HiFI-GAN model is not found!")
@@ -82,8 +83,8 @@ class VoiceSynthetizer:
     def has_MMI(self, STATE_DICT):
                 return any(True for x in STATE_DICT.keys() if "mi." in x)
 
-    def get_Tactron2(self):                 
-        tacotron2_pretrained_model = 'Belinda-122'
+    def load_Tactron2Model(self, model_name):                 
+        tacotron2_pretrained_model = os.path.join(VoiceSynthetizer.models_directory, model_name)
         if not os.path.exists(tacotron2_pretrained_model):
             raise Exception("Voice model not found. Check the location of the model")
             
@@ -92,13 +93,12 @@ class VoiceSynthetizer:
         hparams.sampling_rate = self.sampling_rate
         hparams.max_decoder_steps = 3000 # Max Duration
         hparams.gate_threshold = 0.25 # Model must be 25% sure the clip is over before ending generation
-        model = Tacotron2(hparams)
+        self.model = Tacotron2(hparams)
         state_dict = torch.load(tacotron2_pretrained_model)['state_dict']
         if self.has_MMI(state_dict):
             raise Exception("ERROR: This notebook does not currently support MMI models.")
-        model.load_state_dict(state_dict)
-        _ = model.cuda().eval().half()
-        return model
+        self.model.load_state_dict(state_dict)
+        _ = self.model.cuda().eval().half()
     
     
     def end_to_end_infer(self, text, pronounciation_dictionary=False, show_graphs=False):

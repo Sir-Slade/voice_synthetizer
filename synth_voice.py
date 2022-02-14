@@ -6,15 +6,16 @@ import json
 import sounddevice
 
 import sys
-sys.path.append('hifi-gan')
-sys.path.append('tacotron2')
+
+script_location = os.path.join(os.path.dirname(__file__))
+sys.path.append(os.path.join(script_location,'hifi-gan'))
+sys.path.append(os.path.join(script_location,'tacotron2'))
 
 #Imports from Tacotron2
 from hparams import create_hparams
 from model import Tacotron2
 from layers import TacotronSTFT
 from text import text_to_sequence  
-
 
 #Imports from hifi-gan
 from env import AttrDict
@@ -26,16 +27,16 @@ class VoiceSynthetizer:
     models_directory = "C:\\Tacotron2_Voice_Models" #Only for windows
     def __init__(self, model_name, sampling_rate=22050):
         
-        if not os.path.exists("tacotron2"):
+        if not os.path.exists(os.path.join(script_location,"tacotron2")):
             raise FileNotFoundError("Submodule 'tacotron2' is not installed. Clone the repo 'https://github.com/NVIDIA/tacotron2.git' to install it.")
-        if not os.path.exists("hifi-gan"):
+        if not os.path.exists(os.path.join(script_location,"hifi-gan")):
             raise FileNotFoundError("Submodule 'hifi-gan' is not installed. Clone the repo 'https://github.com/SortAnon/hifi-gan' to install it.") 
         
         self.sampling_rate=sampling_rate
         
         # Setup Pronounciation Dictionary
         self.pronunciation_dict = {}
-        for line in reversed((open('merged.dict.txt', "r").read()).splitlines()):
+        for line in reversed((open(os.path.join(script_location, 'merged.dict.txt'), "r").read()).splitlines()):
             self.pronunciation_dict[(line.split(" ",1))[0]] = (line.split(" ",1))[1].strip()
         self.hifigan = VoiceSynthetizer.load_hifigan()
 
@@ -77,7 +78,7 @@ class VoiceSynthetizer:
             raise Exception("HiFI-GAN model is not found!")
         
         # Load HiFi-GAN
-        conf = os.path.join("hifi-gan", "config_v1.json")
+        conf = os.path.join(script_location, "hifi-gan", "config_v1.json")
         with open(conf) as f:
             json_config = json.loads(f.read())
         h = AttrDict(json_config)
@@ -104,7 +105,7 @@ class VoiceSynthetizer:
         hparams.gate_threshold = 0.25 # Model must be 25% sure the clip is over before ending generation
         self.model = Tacotron2(hparams)
         state_dict = torch.load(tacotron2_pretrained_model)['state_dict']
-        if self.has_MMI(state_dict):
+        if self._has_MMI(state_dict):
             raise Exception("ERROR: This notebook does not currently support MMI models.")
         self.model.load_state_dict(state_dict)
         _ = self.model.cuda().eval().half()
@@ -115,7 +116,7 @@ class VoiceSynthetizer:
         for i in [x for x in text.split("\n") if len(x)]:
             if not pronounciation_dictionary:
                 if i[-1] != ";": i=i+";" 
-            else: i = ARPA(i)
+            else: i = self._ARPA(i)
             with torch.no_grad(): # save VRAM by not including gradients
                 sequence = np.array(text_to_sequence(i, ['english_cleaners']))[None, :]
                 sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
@@ -127,6 +128,6 @@ class VoiceSynthetizer:
                 return audio.cpu().numpy().astype("int16")
 
     def speak(self, line):
-        audio= self.end_to_end_infer(line)
+        audio= self._end_to_end_infer(line)
         sounddevice.play(audio, samplerate=self.sampling_rate)
         sounddevice.wait()

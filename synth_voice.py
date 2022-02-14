@@ -13,7 +13,8 @@ sys.path.append('tacotron2')
 from hparams import create_hparams
 from model import Tacotron2
 from layers import TacotronSTFT
-from text import text_to_sequence     
+from text import text_to_sequence  
+
 
 #Imports from hifi-gan
 from env import AttrDict
@@ -40,17 +41,21 @@ class VoiceSynthetizer:
 
         self.load_Tactron2Model(model_name)
         
-        self.model.decoder.max_decoder_steps = 3000 #@param {type:"integer"}
-        stop_threshold = 0.324 #@param {type:"number"}
+        self.model.decoder.max_decoder_steps = 3000 
+        stop_threshold = 0.324 
         self.model.decoder.gate_threshold = stop_threshold
 
         
     @staticmethod
     def available_voices():
+        '''
+        Lists all the available voices that the synthetizer can use. The models for
+        these voices must be stored in the path specified in 'models_directory'
+        '''
         return [voice for voice in os.listdir(VoiceSynthetizer.models_directory) \
                 if os.path.isfile(os.path.join(VoiceSynthetizer.models_directory, voice))]
         
-    def ARPA(self, text, punctuation=r"!?,.;", EOS_Token=True):
+    def _ARPA(self, text, punctuation=r"!?,.;", EOS_Token=True):
                 out = ''
                 for word_ in text.split(" "):
                     word=word_; end_chars = ''
@@ -84,7 +89,7 @@ class VoiceSynthetizer:
         hifigan.remove_weight_norm()
         return hifigan   
 
-    def has_MMI(self, STATE_DICT):
+    def _has_MMI(self, STATE_DICT):
                 return any(True for x in STATE_DICT.keys() if "mi." in x)
 
     def load_Tactron2Model(self, model_name):                 
@@ -105,8 +110,7 @@ class VoiceSynthetizer:
         _ = self.model.cuda().eval().half()
     
     
-    def end_to_end_infer(self, text, pronounciation_dictionary=False, show_graphs=False):
-        
+    def _end_to_end_infer(self, text, pronounciation_dictionary=False, show_graphs=False):        
         
         for i in [x for x in text.split("\n") if len(x)]:
             if not pronounciation_dictionary:

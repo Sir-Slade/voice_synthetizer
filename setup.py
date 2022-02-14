@@ -7,5 +7,4 @@ setup(
     description = ("A library that enables to synthesize tts from existing Tacotron2 models."),
     url = "https://github.com/Sir-Slade/voice_synthetizer.git",
     packages=['synth_voice'],
-    install_requires=["sounddevice"],
 )

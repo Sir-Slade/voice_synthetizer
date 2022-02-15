@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name = "synth_voice",
+    name = "synth-voice",
     version = "1.0.0",
     author = "Jeshua Perzabal",
     description = ("A library that enables to synthesize tts from existing Tacotron2 models."),

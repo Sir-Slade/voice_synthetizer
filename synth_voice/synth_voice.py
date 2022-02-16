@@ -25,7 +25,7 @@ class VoiceSynthetizer:
         
         if not os.path.exists(os.path.join(script_location,"tacotron2")):
             raise FileNotFoundError("Submodule 'tacotron2' is not installed. Clone the repo 'https://github.com/NVIDIA/tacotron2.git' to install it.")
-        if not os.path.exists(os.path.join(script_location,"hifi-gan")):
+        if not os.path.exists(os.path.join(script_location,"hifi_gan")):
             raise FileNotFoundError("Submodule 'hifi-gan' is not installed. Clone the repo 'https://github.com/SortAnon/hifi-gan' to install it.") 
         
         self.sampling_rate=sampling_rate

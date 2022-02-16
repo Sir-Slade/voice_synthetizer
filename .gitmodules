@@ -2,5 +2,5 @@
 	path = synth_voice/tacotron2
 	url = https://github.com/NVIDIA/tacotron2.git
 [submodule "hifi-gan"]
-	path = synth_voice/hifi-gan
+	path = synth_voice/hifi_gan
 	url = https://github.com/SortAnon/hifi-gan

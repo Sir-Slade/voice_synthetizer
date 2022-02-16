@@ -5,22 +5,18 @@ import torch
 import json
 import sounddevice
 
-import sys
-
-script_location = os.path.join(os.path.dirname(__file__))
-sys.path.append(os.path.join(script_location,'hifi-gan'))
-sys.path.append(os.path.join(script_location,'tacotron2'))
-
 #Imports from Tacotron2
-from hparams import create_hparams
-from model import Tacotron2
-from layers import TacotronSTFT
-from text import text_to_sequence  
+from .tacotron2.text import text_to_sequence  
+from .tacotron2.hparams import create_hparams
+from .tacotron2.model import Tacotron2
+from .tacotron2.layers import TacotronSTFT
 
 #Imports from hifi-gan
-from env import AttrDict
-from models import Generator
-from meldataset import MAX_WAV_VALUE
+from .hifi_gan.env import AttrDict
+from .hifi_gan.models import Generator
+from .hifi_gan.meldataset import MAX_WAV_VALUE
+
+script_location = os.path.join(os.path.dirname(__file__)) #Used to obtain the relative location of folders
 
 
 class VoiceSynthetizer:
@@ -78,7 +74,7 @@ class VoiceSynthetizer:
             raise Exception("HiFI-GAN model is not found!")
         
         # Load HiFi-GAN
-        conf = os.path.join(script_location, "hifi-gan", "config_v1.json")
+        conf = os.path.join(script_location, "hifi_gan", "config_v1.json")
         with open(conf) as f:
             json_config = json.loads(f.read())
         h = AttrDict(json_config)

@@ -6,10 +6,11 @@ import json
 import sounddevice
 
 #Imports from Tacotron2
-from .tacotron2.text import text_to_sequence  
+
 from .tacotron2.hparams import create_hparams
 from .tacotron2.model import Tacotron2
 from .tacotron2.layers import TacotronSTFT
+from .tacotron2.text import text_to_sequence  
 
 #Imports from hifi-gan
 from .hifi_gan.env import AttrDict
